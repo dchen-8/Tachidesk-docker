@@ -1,4 +1,4 @@
-# Tachidesk-Docker
+# Tachidesk-docker
 Run [Tachidesk](https://github.com/AriaMoradi/Tachidesk) inside docker container. The server will be running on http://localhost:4567 open this url in your browser.
 
 # Command
