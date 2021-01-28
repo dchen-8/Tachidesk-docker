@@ -2,8 +2,8 @@
 version: "2.1"
 services:
   tachideskdocker:
-    image: docker.io/arbuild/tachideskdocker
-    container_name: tachideskdocker
+    image: docker.io/arbuild/tachidesk-docker
+    container_name: tachidesk-docker
     environment:
       - PUID=1000
       - PGID=1000
