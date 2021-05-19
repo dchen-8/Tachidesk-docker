@@ -6,7 +6,7 @@ on:
     branches: [ main ]
   workflow_dispatch:
   schedule:
-    - cron: "0 */1 * * *"
+    - cron: "*/30 * * * *"
 
 env:
   GITHUB_TOKEN: ${{ secrets.GIT_WORKFLOW_ACCESS_TOKEN }}
@@ -235,5 +235,5 @@ jobs:
       - name: Clear older Build Docker Images workflows 
         id: clear_older__build_docker_images_workflows
         run: | 
-            echo "delete workflows older then last 3 run"
-            gh api repos/arbuilder/tachidesk-docker/actions/runs | jq -r '.workflow_runs[] | select(.head_branch == "main") | "\(.id)"' | sed '1,3d' | xargs -n1 -I % gh api repos/arbuilder/tachidesk-docker/actions/runs/% -X DELETE
+            echo "delete workflows older then last 5 run"
+            gh api repos/arbuilder/tachidesk-docker/actions/runs | jq -r '.workflow_runs[] | select(.head_branch == "main") | "\(.id)"' | sed '1,5d' | xargs -n1 -I % gh api repos/arbuilder/tachidesk-docker/actions/runs/% -X DELETE
