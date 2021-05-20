@@ -18,10 +18,8 @@ env:
   startup_script_preview_url: 'https://raw.githubusercontent.com/arbuilder/Tachidesk-docker/main/startup_script.sh'
   build_base_image: 'openjdk:latest'
   build_base_image_platform: 'linux/amd64,linux/arm64/v8'
-  build_base_image_preview: 'openjdk:latest'
-  build_base_image_preview_platform: 'linux/amd64,linux/arm64/v8'
-  build_base_image_slim: 'alpine:latest'
-  build_base_image_slim_platform: 'linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x'
+  build_base_image_alpine: 'alpine:latest'
+  build_base_image_alpine_platform: 'linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x'
   
 jobs:
   build:
@@ -101,9 +99,9 @@ jobs:
                 echo "::set-output name=value::false"
             fi
 
-      - name: Build and push latest
+      - name: Build and push stable
         if: steps.release_stable_check.outputs.value == 'true'     
-        id: docker_build_latest
+        id: docker_build_stable
         uses: docker/build-push-action@v2
         with:
           file: scripts/dockerfiles/Git_Actions-Dockerfile
@@ -126,30 +124,31 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           
-      - name: Build and push slim
+      - name: Build and push stable alpine
         if: steps.release_stable_check.outputs.value == 'true'
-        id: docker_build_slim
+        id: docker_build_stable_alpine
         uses: docker/build-push-action@v2
         with:
           file: scripts/dockerfiles/Git_Actions-Dockerfile
-          platforms: ${{ env.build_base_image_slim_platform }}
+          platforms: ${{ env.build_base_image_alpine_platform }}
           push: true
           build-args: |
-            BASE_IMAGE=${{ env.build_base_image_slim }}
+            BASE_IMAGE=${{ env.build_base_image_alpine }}
             BUILD_DATE=${{ steps.get_latest_release_metadata.outputs.build_date }}
             IMAGE_VERSION=${{ steps.get_latest_release_metadata.outputs.stable_version }}
-            IMAGE_TYPE=stable_slim
+            IMAGE_TYPE=stable_alpine
             TACHIDESK_GIT_COMMIT=${{ steps.get_latest_release_metadata.outputs.stable_commit }}
             TACHIDESK_RELEASE_TAG=${{ steps.get_latest_release_metadata.outputs.stable_tag }}
             TACHIDESK_RELEASE_DOWNLOAD_URL=${{ steps.get_latest_release_metadata.outputs.stable_url }}
             TACHIDESK_FILENAME=${{ steps.get_latest_release_metadata.outputs.stable_filename }}
             STARTUP_SCRIPT_URL=${{  env.startup_script_stable_url }}
             TACHIDESK_DOCKER_GIT_COMMIT=${{ steps.get_latest_release_metadata.outputs.tachidesk_docker_git_commit }}
-          tags: ${{ env.build_owner_docker }}/${{ env.build_repo_docker }}:slim
+          tags: |
+            ${{ env.build_owner_docker }}/${{ env.build_repo_docker }}:slim
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
-      - name: save latest release
+      - name: save stable release
         if: steps.release_stable_check.outputs.value == 'true'
         run: |
           cd main
@@ -187,7 +186,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           file: scripts/dockerfiles/Git_Actions-Dockerfile
-          platforms: ${{ env.build_base_image_preview_platform }}
+          platforms: ${{ env.build_base_image_platform }}
           push: true
           build-args: |
             BASE_IMAGE=${{ env.build_base_image_preview }}
@@ -200,7 +199,32 @@ jobs:
             TACHIDESK_FILENAME=${{ steps.get_latest_release_metadata.outputs.preview_filename }}
             STARTUP_SCRIPT_URL=${{ env.startup_script_preview_url }}
             TACHIDESK_DOCKER_GIT_COMMIT=${{ steps.get_latest_release_metadata.outputs.tachidesk_docker_git_commit }}
-          tags: ${{ env.build_owner_docker }}/${{ env.build_repo_docker }}:preview
+          tags: |
+            ${{ env.build_owner_docker }}/${{ env.build_repo_docker }}:preview
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+
+      - name: Build and push preview alpine
+        if: steps.release_preview_check.outputs.value == 'true'
+        id: docker_build_preview_alpine
+        uses: docker/build-push-action@v2
+        with:
+          file: scripts/dockerfiles/Git_Actions-Dockerfile
+          platforms: ${{ env.build_base_image_alpine_platform }}
+          push: true
+          build-args: |
+            BASE_IMAGE=${{ env.build_base_image_alpine }}
+            BUILD_DATE=${{ steps.get_latest_release_metadata.outputs.build_date }}
+            IMAGE_VERSION=${{ steps.get_latest_release_metadata.outputs.preview_version }}
+            IMAGE_TYPE=preview-alpine
+            TACHIDESK_GIT_COMMIT=${{ steps.get_latest_release_metadata.outputs.preview_commit }}
+            TACHIDESK_RELEASE_TAG=${{ steps.get_latest_release_metadata.outputs.preview_tag }}
+            TACHIDESK_RELEASE_DOWNLOAD_URL=${{ steps.get_latest_release_metadata.outputs.preview_url }}
+            TACHIDESK_FILENAME=${{ steps.get_latest_release_metadata.outputs.preview_filename }}
+            STARTUP_SCRIPT_URL=${{ env.startup_script_preview_url }}
+            TACHIDESK_DOCKER_GIT_COMMIT=${{ steps.get_latest_release_metadata.outputs.tachidesk_docker_git_commit }}
+          tags: |
+            ${{ env.build_owner_docker }}/${{ env.build_repo_docker }}:preview-slim
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
