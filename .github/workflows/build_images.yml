@@ -189,7 +189,7 @@ jobs:
           platforms: ${{ env.build_base_image_platform }}
           push: true
           build-args: |
-            BASE_IMAGE=${{ env.build_base_image_preview }}
+            BASE_IMAGE=${{ env.build_base_image }}
             BUILD_DATE=${{ steps.get_latest_release_metadata.outputs.build_date }}
             IMAGE_VERSION=${{ steps.get_latest_release_metadata.outputs.preview_version }}
             IMAGE_TYPE=preview
