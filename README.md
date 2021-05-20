@@ -2,7 +2,7 @@
 
 | Build | Pulls | Stable |Preview |
 |:-:|:-:|:-:|:-:|
-| [![Docker Hub build status](https://github.com/arbuilder/Tachidesk-docker/actions/workflows/build_images.yml/badge.svg?branch=main)](https://github.com/arbuilder/Tachidesk-docker/actions/workflows/docker-image-stable.yml) | [![Docker Pulls](https://img.shields.io/docker/pulls/arbuild/tachidesk-docker.svg)](https://hub.docker.com/r/arbuild/tachidesk-docker/) | [![Latest](https://img.shields.io/badge/dynamic/json?url=https://github.com/arbuilder/tachidesk-docker/raw/main/scripts/tachidesk_version.json&label=version&query=$.stable&color=blue) ![Latest](https://img.shields.io/docker/image-size/arbuild/tachidesk-docker/latest.svg?label=latest) ![Slim](https://img.shields.io/docker/image-size/arbuild/tachidesk-docker/slim.svg?label=slim)](https://hub.docker.com/r/arbuild/tachidesk-docker/) | [![Preview](https://img.shields.io/badge/dynamic/json?url=https://github.com/arbuilder/tachidesk-docker/raw/main/scripts/tachidesk_version.json&label=version&query=$.preview&color=blue) ![Preview](https://img.shields.io/docker/image-size/arbuild/tachidesk-docker/preview?label=preview)](https://hub.docker.com/r/arbuild/tachidesk-docker/) |
+| [![Docker Hub build status](https://github.com/arbuilder/Tachidesk-docker/actions/workflows/build_images.yml/badge.svg?branch=main)](https://github.com/arbuilder/Tachidesk-docker/actions/workflows/docker-image-stable.yml) | [![Docker Pulls](https://img.shields.io/docker/pulls/arbuild/tachidesk-docker.svg)](https://hub.docker.com/r/arbuild/tachidesk-docker/) | [![Latest](https://img.shields.io/badge/dynamic/json?url=https://github.com/arbuilder/tachidesk-docker/raw/main/scripts/tachidesk_version.json&label=version&query=$.stable&color=blue) ![Latest](https://img.shields.io/docker/image-size/arbuild/tachidesk-docker/latest.svg?label=latest) ![Slim](https://img.shields.io/docker/image-size/arbuild/tachidesk-docker/slim.svg?label=slim)](https://hub.docker.com/r/arbuild/tachidesk-docker/) | [![Preview](https://img.shields.io/badge/dynamic/json?url=https://github.com/arbuilder/tachidesk-docker/raw/main/scripts/tachidesk_version.json&label=version&query=$.preview&color=blue) ![Preview](https://img.shields.io/docker/image-size/arbuild/tachidesk-docker/preview?label=preview) ![Slim](https://img.shields.io/docker/image-size/arbuild/tachidesk-docker/preview-slim.svg?label=preview-slim)](https://hub.docker.com/r/arbuild/tachidesk-docker/) |
 
 Run [Tachidesk](https://github.com/AriaMoradi/Tachidesk) inside docker container as non-root user (arbuilder). The server will be running on http://localhost:4567 open this url in your browser.
 
@@ -12,22 +12,18 @@ Log file location - /home/arbuilder/.local/share/Tachidesk/logfile.log
 
 Docker Images are run as non-root user and tested with Docker Scan for known vulnerabilities, for more details use docker scan IMAGE_NAME command
 
-    docker scan docker.io/arbuild/tachidesk-docker:preview
+    docker scan docker.io/arbuild/tachidesk-docker:latest
 
 New docker images are pushed to the dockerhub within an hour after new Tachidesk stable or preview version are released.
 
-
-
 #### Use Slim version which is mutli-arch (linux/386, linux/amd64, linux/arm/v6, linux/arm/v7, linux/arm64, linux/ppc64le, linux/s390x) and has very small size based on alpine linux. If it doesn't work for you use latest version (linux/amd64, linux/arm64).
-
-
 
 ### Tachidesk docker container versions
 
-| Tag | Latest | Slim | Preview | v * . * . * |
-|:-:|:-:|:-:|:-:|:-:|
-| info | latest stable version | latest stable in small container size | latest Preview beta | specific tachidesk stable version |
-| command | docker run -p 4567:4567 docker.io/arbuild/tachidesk-docker |  docker run -p 4567:4567 docker.io/arbuild/tachidesk-docker:slim |  docker run -p 4567:4567 docker.io/arbuild/tachidesk-docker:preview | docker run -p 4567:4567 docker.io/arbuild/tachidesk-docker:v0.2.7 |
+| Tag | latest | slim | preview | preview-slim | v * . * . * |
+|:-:|:-:|:-:|:-:|:-:| :-:|
+| info | latest stable version | latest stable in small container size | latest preview beta | latest preview beta in small container size | specific tachidesk stable version |
+| command | docker run -p 4567:4567 docker.io/arbuild/tachidesk-docker |  docker run -p 4567:4567 docker.io/arbuild/tachidesk-docker:slim |  docker run -p 4567:4567 docker.io/arbuild/tachidesk-docker:preview | docker run -p 4567:4567 docker.io/arbuild/tachidesk-docker:preview-slim | docker run -p 4567:4567 docker.io/arbuild/tachidesk-docker:v0.2.7 |
 
 # Commands
 
@@ -62,6 +58,10 @@ Slim version (uses alpine docker image and only openjdk is installed)
 For Tachidesk Preview version
 
      docker run -p 127.0.0.1:4567:4567 docker.io/arbuild/tachidesk-docker:preview
+	 
+For Tachidesk Preview Slim version (uses alpine docker image and only openjdk is installed)
+
+     docker run -p 127.0.0.1:4567:4567 docker.io/arbuild/tachidesk-docker:preview-slim	 
 	 
 For Specific Tachidesk stable version (from v0.2.7 onwards)
 
