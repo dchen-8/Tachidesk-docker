@@ -16,7 +16,7 @@ Docker Images are run as non-root user and tested with Docker Scan for known vul
 
 New docker images are pushed to the dockerhub within an hour after new Tachidesk stable or preview version are released.
 
-#### Use Slim version which is mutli-arch (linux/386, linux/amd64, linux/arm/v6, linux/arm/v7, linux/arm64, linux/ppc64le, linux/s390x) and has very small size based on alpine linux. If it doesn't work for you use latest version (linux/amd64, linux/arm64).
+Slim version is mutli-arch (linux/386, linux/amd64, linux/arm/v6, linux/arm/v7, linux/arm64, linux/ppc64le, linux/s390x) and has very small size based on alpine linux.
 
 ### Tachidesk docker container versions
 
