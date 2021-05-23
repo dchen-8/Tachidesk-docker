@@ -127,7 +127,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
-      - name: Build and push tag
+      - name: Build and push tag latest
         if: steps.get_release_metadata.outputs.check_meta_pass == 'true' && github.event.inputs.build_tachidesk_tag == 'latest'
         id: docker_build_tag_latest
         uses: docker/build-push-action@v2
@@ -152,7 +152,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
-      - name: Build and push tag alpine
+      - name: Build and push tag latest alpine
         if: steps.get_release_metadata.outputs.check_meta_pass == 'true' && github.event.inputs.build_tachidesk_tag == 'latest'
         id: docker_build_tag_alpine_latest
         uses: docker/build-push-action@v2
