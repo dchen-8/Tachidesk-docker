@@ -89,7 +89,7 @@ jobs:
         run: | 
             cd main
             docker_version_stable=$(jq -r '.stable' scripts/tachidesk_version.json | cut -f2 -d"v")
-            git_version_stable=$(${{ steps.get_latest_release_metadata.outputs.stable_tag }} | cut -f2 -d"v")
+            git_version_stable=$(echo ${{ steps.get_latest_release_metadata.outputs.stable_tag }} | cut -f2 -d"v")
             if [[ $docker_version_stable == $git_version_stable ]]; then
                 echo "No Tachidesk stable updates"
                 echo "::set-output name=value::false"
