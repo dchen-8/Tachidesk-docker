@@ -6,9 +6,8 @@ on:
 env:
   build_owner_docker: 'arbuild'
   build_repo_docker: 'tachidesk-docker'
-  startup_script_stable_url: 'https://raw.githubusercontent.com/arbuilder/Tachidesk-docker/main/startup_script.sh'
+  startup_script_url: 'https://raw.githubusercontent.com/arbuilder/Tachidesk-docker/main/startup_script.sh'
   build_tachidesk_tag: 'v0.3.7'
-  build_tachidesk_url: 'https://github.com/Suwayomi/Tachidesk/releases/download/v0.3.7/Tachidesk-v0.3.7-r539.jar'
   
 jobs:
   build:
@@ -38,7 +37,7 @@ jobs:
         id: get_release_metadata
         run: |
           cd main
-          stable_url=${{ env.build_tachidesk_url }}
+          stable_url=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases | grep -o "https.*.download/${{ env.build_tachidesk_tag }}/.*jar")
           stable_var=$(echo $stable_url | grep -o "Tachidesk-.*.jar" | sed -e's/Tachidesk-\|.jar//g')
           stable_commit=$(echo $stable_var | cut -f2 -d"r")
           stable_tag=${{ env.build_tachidesk_tag }}
