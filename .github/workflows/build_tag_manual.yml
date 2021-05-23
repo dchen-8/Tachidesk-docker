@@ -4,6 +4,8 @@ on:
   workflow_dispatch:
 
 env:
+  build_owner_docker: 'arbuild'
+  build_repo_docker: 'tachidesk-docker'
   startup_script_stable_url: 'https://raw.githubusercontent.com/arbuilder/Tachidesk-docker/main/startup_script.sh'
   build_tachidesk_tag: 'v0.3.7'
   build_tachidesk_url: 'https://github.com/Suwayomi/Tachidesk/releases/download/v0.3.7/Tachidesk-v0.3.7-r539.jar'
