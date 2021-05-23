@@ -50,7 +50,8 @@ jobs:
         id: get_release_metadata
         run: |
           cd main
-          if [[ ${{ github.event.inputs.build_tachidesk_tag }} == 'latest' ]]; then
+          if [[ ${{ github.event.inputs.build_tachidesk_tag }} == "latest" ]]; then
+            echo "latest"
             latest_tag=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases/latest | egrep -o "tag_name.*.v[0-9]+.[0-9]+.[0-9]+" | egrep -o "v[0-9]+.[0-9]+.[0-9]+")
             release_url=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases/latest | egrep -o "https://.*.download/$stable_tag/Tachidesk-$stable_tag-r[0-9]+.jar")
           else
