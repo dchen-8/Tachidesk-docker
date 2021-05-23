@@ -55,10 +55,10 @@ jobs:
         id: get_latest_release_metadata
         run: |
           cd main
-          stable_url=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases/latest | grep -o "https.*.releases/download.*jar")
+          stable_tag=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases/latest | grep -o "tag_name.*.[0-9].[0-9].[0-9]" | grep -o "v[0-9].[0-9].[0-9]")
+          stable_url=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases/latest | grep -o "https.*.download/$stable_tag/.*jar")
           stable_var=$(echo $stable_url | grep -o "Tachidesk-.*.jar" | sed -e's/Tachidesk-\|.jar//g')
           stable_commit=$(echo $stable_var | cut -f2 -d"r")
-          stable_tag=$(echo $stable_var | cut -f1 -d"-")
           stable_filename=Tachidesk-${stable_var}.jar
           stable_version=$(echo $stable_tag | cut -c2-)
           echo "::set-output name=stable_url::$stable_url"
@@ -88,15 +88,14 @@ jobs:
         id: release_stable_check
         run: | 
             cd main
-            docker_version_stable_int=$(jq -r '.stable' scripts/tachidesk_version.json | cut -d'r' -f2)
-            git_version_stable_int=${{ steps.get_latest_release_metadata.outputs.stable_commit }}
-            diff_stable=$(echo "$docker_version_stable_int - $git_version_stable_int" | bc) 
-            if [[ $diff_stable < 0 ]]; then
+            docker_version_stable=$(jq -r '.stable' scripts/tachidesk_version.json | cut -f2 -d"v")
+            git_version_stable=$(${{ steps.get_latest_release_metadata.outputs.stable_tag }} | cut -f2 -d"v")
+            if [[ $docker_version_stable == $git_version_stable ]]; then
+                echo "No Tachidesk stable updates"
+                echo "::set-output name=value::false"
+            else
                 echo "New Tachidesk stable jar is avilable"
                 echo "::set-output name=value::true"
-            else
-                echo "No Tachidesk preview updates"
-                echo "::set-output name=value::false"
             fi
 
       - name: Build and push stable
@@ -152,7 +151,7 @@ jobs:
         if: steps.release_stable_check.outputs.value == 'true'
         run: |
           cd main
-          echo "`jq '.stable="${{ steps.get_latest_release_metadata.outputs.stable_var }}"' scripts/tachidesk_version.json`" > scripts/tachidesk_version.json
+          echo "`jq '.stable="${{ steps.get_latest_release_metadata.outputs.stable_tag }}"' scripts/tachidesk_version.json`" > scripts/tachidesk_version.json
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           git status
