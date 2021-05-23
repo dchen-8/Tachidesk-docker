@@ -1,7 +1,7 @@
 name: Build Manual Tag
 
 on:
-  workflow_dipatch:
+  workflow_dispatch:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GIT_WORKFLOW_ACCESS_TOKEN }}
