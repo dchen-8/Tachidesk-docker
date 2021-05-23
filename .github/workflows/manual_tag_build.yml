@@ -1,4 +1,4 @@
-name: Manual Tachidesk Tag Docker Image
+name: Manual Tag Build
 on:
   workflow_dispatch:
 
