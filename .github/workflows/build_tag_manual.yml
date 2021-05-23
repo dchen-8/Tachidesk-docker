@@ -5,20 +5,28 @@ on:
      inputs:
         build_tachidesk_tag:
           required: true
-          default: 'v0.2.7'
-          description: 'Build Docker Images of this tag'  
+          default: 'v0.0.0'
+          description: 'Build Docker Images of this tag'
+        build_alpine_image:
+          required: false
+          default: 'no'
+          description: 'build alpine version also'
+          
 
 env:
   build_owner_docker: 'arbuild'
   build_repo_docker: 'tachidesk-docker'
   startup_script_url: 'https://raw.githubusercontent.com/arbuilder/Tachidesk-docker/main/startup_script.sh'
+  build_base_image: 'openjdk:latest'
+  build_base_image_platform: 'linux/amd64,linux/arm64/v8'
+  build_base_image_alpine: 'alpine:latest'
+  build_base_image_alpine_platform: 'linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x'
   
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        if: github.event.inputs.build_tachidesk_tag != ''  
         uses: actions/checkout@v2
         with:
           ref: main
@@ -26,63 +34,89 @@ jobs:
           fetch-depth: 0
           
       - name: Login to Docker Hub
-        if: github.event.inputs.build_tachidesk_tag != ''  
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
       
       - name: Set up QEMU
-        if: github.event.inputs.build_tachidesk_tag != ''  
         uses: docker/setup-qemu-action@v1
 
       - name: Set up Docker Buildx
-        if: github.event.inputs.build_tachidesk_tag != ''  
         id: buildx
         uses: docker/setup-buildx-action@v1
 
       - name: get release metadata
-        if: github.event.inputs.build_tachidesk_tag != ''  
         id: get_release_metadata
         run: |
           cd main
-          stable_url=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases | grep -o "https.*.download/${{ github.event.inputs.build_tachidesk_tag }}/.*jar")
-          stable_var=$(echo $stable_url | grep -o "Tachidesk-.*.jar" | sed -e's/Tachidesk-\|.jar//g')
-          stable_commit=$(echo $stable_var | cut -f2 -d"r")
-          stable_tag=${{ github.event.inputs.build_tachidesk_tag }}
-          stable_filename=Tachidesk-${stable_var}.jar
-          stable_version=$(echo $stable_tag | cut -c2-)
-          echo "::set-output name=stable_url::$stable_url"
-          echo "::set-output name=stable_commit::$stable_commit"
-          echo "::set-output name=stable_tag::$stable_tag"
-          echo "::set-output name=stable_filename::$stable_filename"
-          echo "::set-output name=stable_version::$stable_version"
-          echo "::set-output name=stable_var::$stable_var"
-          tachidesk_docker_git_commit=$(git rev-list --count HEAD)
-          echo "::set-output name=tachidesk_docker_git_commit::$tachidesk_docker_git_commit"
-          build_date=$(date "+%F")
-          echo "::set-output name=build_date::$build_date"
-
-      - name: Build and push stable
-        if: github.event.inputs.build_tachidesk_tag != ''      
+          release_url=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases | egrep -o "https://.*./download/${{ github.event.inputs.build_tachidesk_tag }}/Tachidesk-${{ github.event.inputs.build_tachidesk_tag }}-r[0-9]+.jar")
+          if [[ $release_url != "" ]]; then
+              release_var=$(echo $release_url | grep -o "Tachidesk-.*.jar" | sed -e's/Tachidesk-\|.jar//g')
+              release_commit=$(echo $release_var | cut -f2 -d"r")
+              release_tag=${{ github.event.inputs.build_tachidesk_tag }}
+              release_filename=Tachidesk-${release_var}.jar
+              release_version=$(echo $release_tag | cut -c2-)
+              echo "::set-output name=release_url::$release_url"
+              echo "::set-output name=release_commit::$release_commit"
+              echo "::set-output name=release_tag::$release_tag"
+              echo "::set-output name=release_filename::$release_filename"
+              echo "::set-output name=release_version::$release_version"
+              echo "::set-output name=release_var::$release_var"
+              tachidesk_docker_git_commit=$(git rev-list --count HEAD)
+              echo "::set-output name=tachidesk_docker_git_commit::$tachidesk_docker_git_commit"
+              build_date=$(date "+%F")
+              echo "::set-output name=build_date::$build_date"
+              echo "::set-output name=check_meta_pass::true"
+          else
+                echo "version info wrong"
+                echo "::set-output name=check_meta_pass::false"
+          fi
+          
+      - name: Build and push tag
+        if: steps.get_release_metadata.outputs.check_meta_pass == 'true'      
         id: docker_build_tag
         uses: docker/build-push-action@v2
         with:
           file: scripts/dockerfiles/Git_Actions-Dockerfile
-          platforms: linux/amd64,linux/arm64/v8
+          platforms: ${{ env.build_base_image_platform }}
           push: true
           build-args: |
-            BASE_IMAGE=openjdk:latest
+            BASE_IMAGE=${{ env.build_base_image }}
             BUILD_DATE=${{ steps.get_release_metadata.outputs.build_date }}
-            IMAGE_VERSION=${{ steps.get_release_metadata.outputs.stable_version }}
+            IMAGE_VERSION=${{ steps.get_release_metadata.outputs.release_version }}
             IMAGE_TYPE=stable
-            TACHIDESK_GIT_COMMIT=${{ steps.get_release_metadata.outputs.stable_commit }}
+            TACHIDESK_GIT_COMMIT=${{ steps.get_release_metadata.outputs.release_commit }}
             TACHIDESK_RELEASE_TAG=${{ github.event.inputs.build_tachidesk_tag }}
-            TACHIDESK_RELEASE_DOWNLOAD_URL=${{ steps.get_release_metadata.outputs.stable_url }}
-            TACHIDESK_FILENAME=${{ steps.get_release_metadata.outputs.stable_filename }}
+            TACHIDESK_RELEASE_DOWNLOAD_URL=${{ steps.get_release_metadata.outputs.release_url }}
+            TACHIDESK_FILENAME=${{ steps.get_release_metadata.outputs.release_filename }}
             STARTUP_SCRIPT_URL=${{ env.startup_script_url }}
             TACHIDESK_DOCKER_GIT_COMMIT=${{ steps.get_release_metadata.outputs.tachidesk_docker_git_commit }}
           tags: |
             ${{ env.build_owner_docker }}/${{ env.build_repo_docker }}:${{ github.event.inputs.build_tachidesk_tag }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+
+      - name: Build and push tag alpine
+        if: steps.get_release_metadata.outputs.check_meta_pass == 'true' && github.event.inputs.build_alpine_image == 'true'    
+        id: docker_build_tag_alpine
+        uses: docker/build-push-action@v2
+        with:
+          file: scripts/dockerfiles/Git_Actions-Dockerfile
+          platforms: ${{ env.build_base_image_alpine_platform }}
+          push: true
+          build-args: |
+            BASE_IMAGE=${{ env.build_base_image_alpine }}
+            BUILD_DATE=${{ steps.get_release_metadata.outputs.build_date }}
+            IMAGE_VERSION=${{ steps.get_release_metadata.outputs.release_version }}
+            IMAGE_TYPE=stable-alpine
+            TACHIDESK_GIT_COMMIT=${{ steps.get_release_metadata.outputs.release_commit }}
+            TACHIDESK_RELEASE_TAG=${{ github.event.inputs.build_tachidesk_tag }}
+            TACHIDESK_RELEASE_DOWNLOAD_URL=${{ steps.get_release_metadata.outputs.release_url }}
+            TACHIDESK_FILENAME=${{ steps.get_release_metadata.outputs.release_filename }}
+            STARTUP_SCRIPT_URL=${{ env.startup_script_url }}
+            TACHIDESK_DOCKER_GIT_COMMIT=${{ steps.get_release_metadata.outputs.tachidesk_docker_git_commit }}
+          tags: |
+            ${{ env.build_owner_docker }}/${{ env.build_repo_docker }}:${{ github.event.inputs.build_tachidesk_tag }}-slim
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache

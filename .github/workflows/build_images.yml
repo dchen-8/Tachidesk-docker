@@ -55,9 +55,9 @@ jobs:
         id: get_latest_release_metadata
         run: |
           cd main
-          stable_tag=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases/latest | grep -o "tag_name.*.[0-9].[0-9].[0-9]" | grep -o "v[0-9].[0-9].[0-9]")
-          stable_url=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases/latest | grep -o "https.*.download/$stable_tag/.*jar")
-          stable_var=$(echo $stable_url | grep -o "Tachidesk-.*.jar" | sed -e's/Tachidesk-\|.jar//g')
+          stable_tag=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases/latest | egrep -o "tag_name.*.v[0-9]+.[0-9]+.[0-9]+" | egrep -o "v[0-9]+.[0-9]+.[0-9]+")
+          stable_url=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases/latest | egrep -o "https://.*.download/$stable_tag/Tachidesk-$stable_tag-r[0-9]+.jar")
+          stable_var=$(echo $stable_url | egrep -o "$stable_tag-r[0-9]+")
           stable_commit=$(echo $stable_var | cut -f2 -d"r")
           stable_filename=Tachidesk-${stable_var}.jar
           stable_version=$(echo $stable_tag | cut -c2-)
@@ -90,7 +90,7 @@ jobs:
             cd main
             docker_version_stable=$(jq -r '.stable' scripts/tachidesk_version.json | cut -f2 -d"v")
             git_version_stable=$(echo ${{ steps.get_latest_release_metadata.outputs.stable_tag }} | cut -f2 -d"v")
-            if [[ $docker_version_stable == $git_version_stable ]]; then
+            if [[ $docker_version_stable == $git_version_stable || steps.get_latest_release_metadata.outputs.stable_var == "" ]]; then
                 echo "No Tachidesk stable updates"
                 echo "::set-output name=value::false"
             else
@@ -99,7 +99,7 @@ jobs:
             fi
 
       - name: Build and push stable
-        if: steps.release_stable_check.outputs.value == 'true'     
+        if: steps.release_stable_check.outputs.value == 'true'      
         id: docker_build_stable
         uses: docker/build-push-action@v2
         with:
@@ -135,7 +135,7 @@ jobs:
             BASE_IMAGE=${{ env.build_base_image_alpine }}
             BUILD_DATE=${{ steps.get_latest_release_metadata.outputs.build_date }}
             IMAGE_VERSION=${{ steps.get_latest_release_metadata.outputs.stable_version }}
-            IMAGE_TYPE=stable_alpine
+            IMAGE_TYPE=stable-alpine
             TACHIDESK_GIT_COMMIT=${{ steps.get_latest_release_metadata.outputs.stable_commit }}
             TACHIDESK_RELEASE_TAG=${{ steps.get_latest_release_metadata.outputs.stable_tag }}
             TACHIDESK_RELEASE_DOWNLOAD_URL=${{ steps.get_latest_release_metadata.outputs.stable_url }}
