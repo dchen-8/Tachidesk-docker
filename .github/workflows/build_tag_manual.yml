@@ -54,7 +54,7 @@ jobs:
           echo "::set-output name=build_date::$build_date"
 
       - name: Build and push stable
-        if: steps.release_stable_check.outputs.value == 'true'     
+        if: env.build_tachidesk_tag != ''     
         id: docker_build_tag
         uses: docker/build-push-action@v2
         with:
