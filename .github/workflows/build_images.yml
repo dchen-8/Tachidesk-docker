@@ -57,7 +57,7 @@ jobs:
           cd main
           stable_tag=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases/latest | egrep -o "tag_name.*.v[0-9]+.[0-9]+.[0-9]+" | egrep -o "v[0-9]+.[0-9]+.[0-9]+")
           stable_url=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases/latest | egrep -o "https://.*.download/$stable_tag/Tachidesk-$stable_tag-r[0-9]+.jar")
-          stable_var=$(echo $stable_url | egrep -o "$stable_tag-r[0-9]+")
+          stable_var=$(echo $stable_url | egrep -o "Tachidesk-$stable_tag-r[0-9]+.jar" | egrep -o "$stable_tag-r[0-9]+")
           stable_commit=$(echo $stable_var | cut -f2 -d"r")
           stable_filename=Tachidesk-${stable_var}.jar
           stable_version=$(echo $stable_tag | cut -c2-)
@@ -68,8 +68,8 @@ jobs:
           echo "::set-output name=stable_version::$stable_version"
           echo "::set-output name=stable_var::$stable_var"
           preview_tag=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk-preview/releases/latest | egrep -o "tag_name.*.v[0-9]+.[0-9]+.[0-9]+-r[0-9]+" | egrep -o "v[0-9]+.[0-9]+.[0-9]+-r[0-9]+")
-          preview_url=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk-preview/releases/latest | egrep -o "https://.*.download/$preview_tag/Tachidesk-$preview_tag-r[0-9]+.jar")
-          preview_var=$(echo $stable_url | egrep -o "$stable_tag-r[0-9]+")
+          preview_url=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk-preview/releases/latest | egrep -o "https://.*.download/$preview_tag/Tachidesk-$preview_tag.jar")
+          preview_var=$(echo $preview_url | grep -o "Tachidesk-$preview_tag.jar" | grep -o "$preview_tag" )
           preview_commit=$(echo $preview_var | cut -f2 -d"r")
           preview_filename=Tachidesk-${preview_var}.jar
           preview_version=$(echo $preview_tag | cut -c2-)
