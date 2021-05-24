@@ -50,14 +50,15 @@ jobs:
         id: get_release_metadata
         run: |
           cd main
-          if [[ ${{ github.event.inputs.build_tachidesk_tag }} == "latest" ]]; then
-              latest_tag=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases/latest | egrep -o "tag_name.*.v[0-9]+.[0-9]+.[0-9]+" | egrep -o "v[0-9]+.[0-9]+.[0-9]+")
+          latest_tag=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases/latest | egrep -o "tag_name.*.v[0-9]+.[0-9]+.[0-9]+" | egrep -o "v[0-9]+.[0-9]+.[0-9]+")
+          if [[ ${{ github.event.inputs.build_tachidesk_tag }} == $latest_tag ]]; then
               release_url=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases/latest | egrep -o "https://.*.download/$latest_tag/Tachidesk-$latest_tag-r[0-9]+.jar")
+              echo "::set-output name=is_latest::true"
           else
               release_url=$(curl -s https://api.github.com/repos/Suwayomi/Tachidesk/releases | egrep -o "https://.*./download/${{ github.event.inputs.build_tachidesk_tag }}/Tachidesk-${{ github.event.inputs.build_tachidesk_tag }}-r[0-9]+.jar")
+              echo "::set-output name=is_latest::false"
           fi
           if [[ $release_url != "" ]]; then
-              echo "test6"
               release_var=$(echo $release_url | grep -o "Tachidesk-.*.jar" | sed -e's/Tachidesk-\|.jar//g')
               release_commit=$(echo $release_var | cut -f2 -d"r")
               release_tag=$(echo $release_var | cut -f1 -d"-")
@@ -80,7 +81,7 @@ jobs:
           fi
           
       - name: Build and push tag
-        if: steps.get_release_metadata.outputs.check_meta_pass == 'true' && github.event.inputs.build_tachidesk_tag != 'latest'
+        if: steps.get_release_metadata.outputs.check_meta_pass == 'true' && steps.get_release_metadata.outputs.is_latest == 'false'
         id: docker_build_tag
         uses: docker/build-push-action@v2
         with:
@@ -104,7 +105,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
 
       - name: Build and push tag alpine
-        if: steps.get_release_metadata.outputs.check_meta_pass == 'true' && github.event.inputs.build_tachidesk_tag != 'latest' && github.event.inputs.build_alpine_image == 'true'
+        if: steps.get_release_metadata.outputs.check_meta_pass == 'true' && github.event.inputs.build_alpine_image == 'true' && steps.get_release_metadata.outputs.is_latest == 'false'
         id: docker_build_tag_alpine
         uses: docker/build-push-action@v2
         with:
@@ -128,7 +129,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
 
       - name: Build and push tag latest
-        if: steps.get_release_metadata.outputs.check_meta_pass == 'true' && github.event.inputs.build_tachidesk_tag == 'latest'
+        if: steps.get_release_metadata.outputs.check_meta_pass == 'true' && steps.get_release_metadata.outputs.is_latest == 'true'
         id: docker_build_tag_latest
         uses: docker/build-push-action@v2
         with:
@@ -153,7 +154,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
 
       - name: Build and push tag latest alpine
-        if: steps.get_release_metadata.outputs.check_meta_pass == 'true' && github.event.inputs.build_tachidesk_tag == 'latest'
+        if: steps.get_release_metadata.outputs.check_meta_pass == 'true' && steps.get_release_metadata.outputs.is_latest == 'true'
         id: docker_build_tag_alpine_latest
         uses: docker/build-push-action@v2
         with:
